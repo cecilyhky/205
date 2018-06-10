@@ -2,6 +2,7 @@ from flask import *
 from collections import *
 from pymysql import *
 from pymysql.cursors import *
+import jinja2
 
 
 class OD_Cursor(DictCursorMixin,Cursor):
@@ -42,7 +43,7 @@ def cookie(msgs,pagecontent):
 def getfile(filename):
     try:
         return render_template(filename)
-    except Exception:
+    except jinja2.TemplateNotFound:
         return app.send_static_file(filename)
 
 @app.route("/login",methods=['POST','GET'])
@@ -56,7 +57,7 @@ def login():
         print ("len(r): ", len(r))
         if len(r) == 1:
             session['username'] = request.form['user']
-            return redirect("/")
+            return redirect(url_for("/"))
         msgs={"error": "login error"}
         return cookie(msgs,render_template("/login.html"))
     return render_template("/login.html")
@@ -67,7 +68,7 @@ def Signup():
     print (request)
     print (request.form)
     if request.method=='POST':
-        r=insert("insert into user (user,pass,first,last,gender,phone,email) value ('" + request.form['user'] + "','" + request.form['pass'] + "','" +request.form['first']+ "', '" +request['last'] + "', '" +  request.form['gender'] +"', '" + request.form['phone'] + "', '"+request.form['email'] +   "'")
+        r=insert("insert into user (user,pass,first,last,gender,phone,email) value ('" + request.form['user'] + "','" + request.form['pass'] + "','" +request.form['first']+ "', '" +request['last'] + "', '" +  request.form.get('gender') +"', '" + request.form['phone'] + "', '"+request.form['email'] +   "'")
         if r > 0:
             session['user'] = request.form['user']
             return redirect("/")
